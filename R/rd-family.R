@@ -35,23 +35,23 @@ topics_process_family_prefix <- function(family) {
 
 }
 
-topics_process_family <- function(topics, env) {
-  family_index <- invert(topics$simple_values("family"))
+topics_process_family <- function(topics, env, family_index = NULL) {
+  family_index <- family_index %||% invert(topics$simple_values("family"))
   aliases <- topics$simple_values("alias")
 
   for (topic_name in names(topics$topics)) {
     topic <- topics$get(topic_name)
-    families <- topic$get_value("family")
-
+    families <- unique(topic$get_value("family"))
+    
     for (family in families) {
       related <- family_index[[family]]
       topic$add(rd_section("concept", family))
 
-      others <- setdiff(related, topic_name)
+      others <- setdiff(related, c(topic_name, aliases[[topic_name]]))
       if (length(others) < 1)
         next
-
-      by_file <- map_chr(aliases[others], function(x) {
+      
+      by_file <- map_chr(others, function(x) {
         obj <- find_object(x[1], env)
         suffix <- if (is.function(obj$value)) "()" else ""
         paste0("\\code{\\link{", escape(x[1]), "}", suffix, "}")
