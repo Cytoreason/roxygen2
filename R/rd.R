@@ -37,11 +37,17 @@ roclet_process.roclet_rd <- function(x, blocks, env, base_path) {
   # Convert each block into a topic, indexed by filename
   topics <- RoxyTopics$new()
 
+  family_index <- list()
   for (block in blocks) {
     rd <- block_to_rd(block, base_path, env)
+    block_families <- sapply(block_get_tags(block,"family"), "[[", "val")
+    topic_name <- block$object$topic
+    if( length(topic_name) && length(block_families) ){
+      family_index[block_families] <- lapply(block_families, function(x) c(family_index[[x]], topic_name))
+    }
     topics$add(rd, block)
   }
-  topics_process_family(topics, env)
+  topics_process_family(topics, env, family_index = family_index)
   topics_process_inherit(topics, env)
   topics$drop_invalid()
   topics_fix_params_order(topics)
