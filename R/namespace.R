@@ -120,7 +120,14 @@ roxy_tag_ns.roxy_tag_export <- function(x, block, env, import_only = FALSE) {
 
   if (identical(x$val, "")) {
     # FIXME: check for empty exports (i.e. no name)
-    default_export(block$object, block)
+    statement <- default_export(block$object, block)
+    if (statement == "export()") {
+      warn_roxy_tag(x, "could not infer name of exported object")
+      return()
+      
+    }
+    statement
+    
   } else {
     export(x$val)
   }
